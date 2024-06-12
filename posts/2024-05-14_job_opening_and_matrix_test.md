@@ -1,9 +1,9 @@
 ---
 media:
-  - matrix-eu-announce
+  - matrix
 
 mentions:
-  matrix-eu-announce:
+  matrix:
     - "anikaerxleben:matrix.org"
     - "bgruening:matrix.org"
 

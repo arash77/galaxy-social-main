@@ -1,9 +1,9 @@
 ---
 media:
-  - mastodon-eu-freiburg
+  - mastodon
 
 hashtags:
-  mastodon-eu-freiburg:
+  mastodon:
     - engineeringjobs
     - hiring
 
