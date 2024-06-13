@@ -1,0 +1,37 @@
+name: Publish Content
+
+on:
+  pull_request_target:
+    branches: [main]
+    types: [closed]
+    paths:
+      - "posts/**"
+
+jobs:
+  publish:
+    if: github.event.pull_request.merged == true
+    name: Publish content
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run composite action
+        id: composite_action
+        uses: ./.github/actions/workflow
+        with:
+          files: 'posts/**'
+
+      - name: Run script to publish contents
+        if: steps.composite_action.outputs.any_changed == 'true'
+        run: python -u github_run.py --json-out processed_files.json
+
+      - name: Commit changes
+        if: steps.composite_action.outputs.any_changed == 'true'
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          file_pattern: "processed_files.json"
+          branch: "processed_files"

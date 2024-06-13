@@ -1,0 +1,29 @@
+name: Create Preview
+
+on:
+  pull_request_target:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+    paths:
+      - "posts/**"
+
+jobs:
+  preview:
+    name: Preview
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run composite action
+        id: composite_action
+        uses: ./.github/actions/workflow
+        with:
+          files: "posts/**"
+
+      - name: Run script to create preview
+        if: steps.composite_action.outputs.any_changed == 'true'
+        run: python -u github_run.py --preview
