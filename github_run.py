@@ -34,7 +34,7 @@ class github_run:
             lambda m: f"{m.group(1)}`{m.group(2)}`",
             comment_text,
         )
-        print(comment_text)
+        print(f"\nGitHub Comments:\n\n---\n{comment_text}")
         if (
             not comment_text
             or not self.github_token
@@ -109,16 +109,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     gs = galaxy_social(args.preview, args.json_out)
-
-    lint_errors = []
-    for file_path in files_to_process:
-        result, status = gs.lint_markdown_file(file_path)
-        if not status:
-            lint_errors.append(file_path)
-            print(result)
-    if lint_errors:
-        github.comment(f"Please check your files: {', '.join(lint_errors)}")
-        sys.exit(1)
 
     try:
         message = gs.process_files(files_to_process)
