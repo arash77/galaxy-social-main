@@ -1,4 +1,4 @@
-name: Workflow
+name: Galaxy Social composite action
 description: Perform common steps for getting changed files, setting up the environment, and running the main logic.
 inputs:
   files:
@@ -9,28 +9,9 @@ inputs:
     description: "Whether to create a preview or not"
     default: "false"
 
-  GITHUB_TOKEN:
-    description: "GitHub token"
-    required: true
-
   PR_NUMBER:
-    description: "Pull Request number"
+    description: "Pull request number"
     required: true
-
-  MASTODON_ACCESS_TOKEN:
-    description: "Mastodon access token"
-
-  BLUESKY_PASSWORD:
-    description: "Bluesky password"
-
-  MATRIX_ACCESS_TOKEN:
-    description: "Matrix access token"
-
-  SLACK_ACCESS_TOKEN:
-    description: "Slack access token"
-
-  MASTODON_EU_FR_TOKEN:
-    description: "Mastodon EU FR token"
 
 runs:
   using: "composite"
@@ -78,13 +59,6 @@ runs:
       shell: bash
       run: |
         echo "CHANGED_FILES=${{ steps.get_changed_files.outputs.all_changed_files }}" >> $GITHUB_ENV
-        echo "MASTODON_ACCESS_TOKEN=${{ inputs.MASTODON_ACCESS_TOKEN }}" >> $GITHUB_ENV
-        echo "BLUESKY_PASSWORD=${{ inputs.BLUESKY_PASSWORD }}" >> $GITHUB_ENV
-        echo "MATRIX_ACCESS_TOKEN=${{ inputs.MATRIX_ACCESS_TOKEN }}" >> $GITHUB_ENV
-        echo "SLACK_ACCESS_TOKEN=${{ inputs.SLACK_ACCESS_TOKEN }}" >> $GITHUB_ENV
-        echo "MASTODON_EU_FR_TOKEN=${{ inputs.MASTODON_EU_FR_TOKEN }}" >> $GITHUB_ENV
-        echo "GITHUB_TOKEN=${{ inputs.GITHUB_TOKEN }}" >> $GITHUB_ENV
-        echo "PR_NUMBER=${{ inputs.PR_NUMBER }}" >> $GITHUB_ENV
 
     - name: Run script to create preview
       if: steps.get_changed_files.outputs.any_changed == 'true' && inputs.preview == 'true'
