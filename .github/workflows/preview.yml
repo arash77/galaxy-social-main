@@ -22,7 +22,6 @@ jobs:
         id: composite_action
         uses: ./.github/actions/workflow
         with:
-          files: "posts/**"
           preview: "true"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.number }}
