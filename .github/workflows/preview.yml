@@ -23,7 +23,11 @@ jobs:
         uses: ./.github/actions/workflow
         with:
           files: "posts/**"
-
-      - name: Run script to create preview
-        if: steps.composite_action.outputs.any_changed == 'true'
-        run: python -u github_run.py --preview
+          preview: "true"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.number }}
+          MASTODON_ACCESS_TOKEN: ${{ secrets.MASTODON_ACCESS_TOKEN }}
+          BLUESKY_PASSWORD: ${{ secrets.BLUESKY_PASSWORD }}
+          MATRIX_ACCESS_TOKEN: ${{ secrets.MATRIX_ACCESS_TOKEN }}
+          SLACK_ACCESS_TOKEN: ${{ secrets.SLACK_ACCESS_TOKEN }}
+          MASTODON_EU_FR_TOKEN: ${{ secrets.MASTODON_EU_FR_TOKEN }}
