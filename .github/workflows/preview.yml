@@ -8,12 +8,7 @@ on:
       - "posts/**"
 
 jobs:
-  setup:
-    uses: ./.github/workflows/setup-secrets.yml
-    secrets: inherit
-
   preview:
-    needs: setup
     name: Preview
     runs-on: ubuntu-latest
     permissions:
@@ -22,6 +17,15 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Set environment variables
+        run: |
+          echo "GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
+          echo "MASTODON_ACCESS_TOKEN=${{ secrets.MASTODON_ACCESS_TOKEN }}" >> $GITHUB_ENV
+          echo "BLUESKY_PASSWORD=${{ secrets.BLUESKY_PASSWORD }}" >> $GITHUB_ENV
+          echo "MATRIX_ACCESS_TOKEN=${{ secrets.MATRIX_ACCESS_TOKEN }}" >> $GITHUB_ENV
+          echo "SLACK_ACCESS_TOKEN=${{ secrets.SLACK_ACCESS_TOKEN }}" >> $GITHUB_ENV
+          echo "MASTODON_EU_FR_TOKEN=${{ secrets.MASTODON_EU_FR_TOKEN }}" >> $GITHUB_ENV
 
       - name: Run composite action
         uses: ./.github/actions/galaxy-social
