@@ -11,6 +11,7 @@ jobs:
   setup:
     if: github.event.pull_request.merged == true
     uses: ./.github/workflows/setup-secrets.yml
+    secrets: inherit
 
   publish:
     if: github.event.pull_request.merged == true
@@ -27,5 +28,4 @@ jobs:
       - name: Run composite action
         uses: ./.github/actions/galaxy-social
         with:
-          PR_NUMBER: ${{ github.event.number }}
-          GIHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.number }} 
