@@ -16,6 +16,9 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: checkout
+      uses: actions/checkout@v4
+
     - name: Get changed files in posts folder
       id: get_changed_files
       uses: tj-actions/changed-files@v44
@@ -76,6 +79,3 @@ runs:
       with:
         file_pattern: "processed_files.json"
         branch: "processed_files"
-
-    - name: checkout main
-      uses: actions/checkout@v4

@@ -8,13 +8,13 @@ on:
       - "posts/**"
 
 jobs:
-  setup-secrets:
+  setup:
     if: github.event.pull_request.merged == true
     uses: ./.github/workflows/setup-secrets.yml
 
   publish:
     if: github.event.pull_request.merged == true
-    needs: setup-secrets
+    needs: setup
     name: Publish content
     runs-on: ubuntu-latest
     permissions:

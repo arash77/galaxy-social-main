@@ -8,11 +8,11 @@ on:
       - "posts/**"
 
 jobs:
-  setup-secrets:
+  setup:
     uses: ./.github/workflows/setup-secrets.yml
 
   preview:
-    needs: setup-secrets
+    needs: setup
     name: Preview
     runs-on: ubuntu-latest
     permissions:
