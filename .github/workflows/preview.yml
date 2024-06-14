@@ -20,7 +20,7 @@ jobs:
 
       - name: Run composite action
         id: composite_action
-        uses: ./.github/actions/workflow
+        uses: ./.github/actions/galaxy-social
         with:
           preview: "true"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
