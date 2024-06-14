@@ -28,3 +28,4 @@ jobs:
         uses: ./.github/actions/galaxy-social
         with:
           PR_NUMBER: ${{ github.event.number }}
+          GIHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

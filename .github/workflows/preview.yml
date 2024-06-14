@@ -27,3 +27,4 @@ jobs:
         with:
           preview: "true"
           PR_NUMBER: ${{ github.event.number }}
+          GIHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
