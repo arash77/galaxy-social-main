@@ -54,7 +54,7 @@ class galaxy_social:
             self.plugins[plugin] = plugin_class(**config)
         except Exception as e:
             raise Exception(
-                f"Invalid config for {module_path}.{class_name}.\nChange configs in `plugins.yml`.\n{e}"
+                f"Invalid config for {module_path}.{class_name}.\nChange configs in `plugins.yml` or add env variable.\n{e}"
             )
 
     def lint_markdown_file(self, file_path):
