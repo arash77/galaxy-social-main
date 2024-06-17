@@ -21,4 +21,4 @@ hashtags:
 ---
 This is an API test of Galaxy social!
 
-![Galaxy Project logo]([https://example.com/a.jpg](https://galaxyproject.org/images/galaxy-logos/galaxy_project_logo.png))
+![Galaxy Project logo](https://galaxyproject.org/images/galaxy-logos/galaxy_project_logo.png)
