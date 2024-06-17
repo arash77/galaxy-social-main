@@ -7,21 +7,18 @@ media:
 
 mentions:
   bluesky:
-    - a.bsky.social
+    - brilliantarash.bsky.social
   mastodon:
-    - a
+    - brilliantarash@mstdn.science 
   matrix:
-    - a:matrix.org
+    - brilliantarash:matrix.org
 
 hashtags:
   bluesky:
-    - a
-    - b
+    - galaxysocial
   mastodon:
-    - c
-    - d
+    - galaxysocial
 ---
-Your text content goes here.
+This is an API test of Galaxy social!
 
-![A](https://example.com/a.jpg)
-![B](https://example.org/b.png)
+![Galaxy Project logo]([https://example.com/a.jpg](https://galaxyproject.org/images/galaxy-logos/galaxy_project_logo.png))
