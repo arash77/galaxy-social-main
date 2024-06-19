@@ -20,6 +20,7 @@ jobs:
 
       - name: Set environment variables
         run: |
+          echo "PR_NUMBER=${{ github.event.number }}" >> $GITHUB_ENV
           echo "GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
           echo "MASTODON_ACCESS_TOKEN=${{ secrets.MASTODON_ACCESS_TOKEN }}" >> $GITHUB_ENV
           echo "BLUESKY_PASSWORD=${{ secrets.BLUESKY_PASSWORD }}" >> $GITHUB_ENV
@@ -31,4 +32,3 @@ jobs:
         uses: ./.github/actions/galaxy-social
         with:
           preview: "true"
-          PR_NUMBER: ${{ github.event.number }}
