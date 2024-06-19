@@ -35,7 +35,7 @@ class galaxy_social:
                 plugin.get("config", {}),
             )
 
-    def init_plugin(self, plugin):
+    def init_plugin(self, plugin: str):
         module_path, class_name, config = self.plugins_config_dict[plugin]
         missing_env_vars = []
         for key, value in config.items():
@@ -45,7 +45,7 @@ class galaxy_social:
                 else:
                     missing_env_vars.append(value[1:])
         if missing_env_vars:
-            print(
+            raise Exception(
                 f"Missing environment variables: {', '.join(missing_env_vars)} for {plugin} plugin."
             )
         try:
@@ -54,7 +54,7 @@ class galaxy_social:
             self.plugins[plugin] = plugin_class(**config)
         except Exception as e:
             raise Exception(
-                f"Invalid config for {module_path}.{class_name}.\nChange configs in `plugins.yml` or add env variable.\n{e}"
+                f"Invalid config for {module_path}.{class_name}.\nChange configs in plugins.yml.\n{e}"
             )
 
     def lint_markdown_file(self, file_path):
@@ -143,7 +143,7 @@ class galaxy_social:
                     images=metadata.get("images", []),
                 )
             except Exception as e:
-                raise Exception(f"Failed to format post for `{file_path}`.\n{e}")
+                raise Exception(f"Failed to format post for {file_path}.\n{e}")
         if self.preview:
             message = f"👋 Hello! I'm your friendly social media assistant. Below are the previews of this post:\n`{file_path}`"
             for media in metadata["media"]:

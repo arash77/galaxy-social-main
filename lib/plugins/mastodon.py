@@ -17,7 +17,9 @@ class mastodon_client:
     def content_in_chunks(self, content, max_chunk_length):
         paragraphs = content.split("\n\n\n")
         for p in paragraphs:
-            for chunk in textwrap.wrap(p.strip("\n"), max_chunk_length, replace_whitespace=False):
+            for chunk in textwrap.wrap(
+                p.strip("\n"), max_chunk_length, replace_whitespace=False
+            ):
                 yield chunk
 
     def wrap_text_with_index(self, content):
@@ -26,9 +28,7 @@ class mastodon_client:
         # urls always count as 23 chars on mastodon
         placeholder = "~" * 23
         urls = re.findall(r"https?://\S+", content)
-        placeholder_content = re.sub(
-            r"https?://\S+", placeholder, content
-        )
+        placeholder_content = re.sub(r"https?://\S+", placeholder, content)
         wrapped_lines = list(
             self.content_in_chunks(placeholder_content, self.max_content_length - 8)
         )
@@ -50,7 +50,12 @@ class mastodon_client:
         else:
             warnings = ""
 
-        chunks = self.wrap_text_with_index(f"{content}\n\n{mentions}\n{hashtags}")
+        content += "\n"
+        if mentions:
+            content = f"{content}\n{mentions}"
+        if hashtags:
+            content = f"{content}\n{hashtags}"
+        chunks = self.wrap_text_with_index(content.strip("\n"))
 
         formatted_content = {
             "body": "\n\n".join(chunks),
