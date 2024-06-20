@@ -253,15 +253,16 @@ class bluesky_client:
             if not content["images"] or reply_to:
                 embed = self.handle_url_card(cast(str, last_url))
 
-            try:
+            if True:
+            # try:
                 post = self.blueskysocial.send_post(
                     text, facets=facets, embed=embed, reply_to=reply_to
                 )
                 posts.append(post)
                 if len(posts) == 1:
                     link = f"https://bsky.app/profile/{self.blueskysocial.me.handle}/post/{posts[0].uri.split('/')[-1]}"
-            except Exception as e:
-                print(e)
+            # except Exception as e:
+            #     print(e)
                 for post in posts:
                     self.blueskysocial.delete_post(post.uri)
                 return False, None

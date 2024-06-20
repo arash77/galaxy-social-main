@@ -107,13 +107,14 @@ class matrix_client:
                 # replace original image url with that of the server upload
                 msg["url"] = resp.content_uri
 
-            try:
+            if True:
+            # try:
                 post = await self.client.room_send(
                     self.room_id, message_type="m.room.message", content=msg
                 )
                 posts.append(post.event_id)
-            except Exception as e:
-                print(e)
+            # except Exception as e:
+            #     print(e)
                 for post in posts:
                     await self.client.room_redact(
                         self.room_id, post, "Failed to post completely!"
