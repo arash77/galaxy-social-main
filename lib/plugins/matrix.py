@@ -120,9 +120,9 @@ class matrix_client:
                         self.room_id, post, "Failed to post completely!"
                     )
                 return False, None
-            event_link = f"https://matrix.to/#/{self.room_id}/{posts[-1]}"
 
         await self.client.close()
+        event_link = f"https://matrix.to/#/{self.room_id}/{posts[-1]}"
         return True, event_link
 
     def format_content(self, content, *args, **kwargs):
