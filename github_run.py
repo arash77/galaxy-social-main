@@ -44,7 +44,7 @@ class github_run:
             if not comment_body:
                 continue
             try:
-                self.pr.create_review_comment(comment_body)
+                self.pr.create_issue_comment(comment_body)
             except Exception as e:
                 print(f"Error creating comment: {e}")
                 return False
