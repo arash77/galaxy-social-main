@@ -94,8 +94,7 @@ class mastodon_client:
 
         posts = []
         for text in content["chunks"]:
-            if True:
-            # try:
+            try:
                 toot = self.mastodon_handle.status_post(
                     status=text,
                     in_reply_to_id=posts[-1] if posts else None,
@@ -104,8 +103,8 @@ class mastodon_client:
                 posts.append(toot.id)
                 if len(posts) == 1:
                     link = toot.url
-            # except Exception as e:
-            #     print(e)
+            except Exception as e:
+                print(e)
                 for post in posts:
                     self.mastodon_handle.status_delete(post)
                 return False, None

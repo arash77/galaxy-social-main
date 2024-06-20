@@ -160,12 +160,12 @@ if __name__ == "__main__":
         if not_posted:
             url = github_instance.new_pr(not_posted)
             not_posted_text = "\n".join(
-                f"File `{file_path}` failed to post to `{', '.join(media)}`"
+                f"File `{file_path}` failed to post to `{', '.join(media)}`."
                 for file_path, media in not_posted.items()
             )
             github_instance.comment(
-                f"Unfortunately there was a problem!\n{not_posted_text}"
-                f"Created a new PR for failed posts: {url}"
+                f"Unfortunately, there was a problem!\n{not_posted_text}\n"
+                f"I created a new PR for failed posts: {url}"
             )
     except Exception as e:
         github_instance.comment("Something went wrong, an Admin will take a look.")

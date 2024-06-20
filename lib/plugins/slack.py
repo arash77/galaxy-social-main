@@ -103,8 +103,7 @@ class slack_client:
             response = self.upload_images(content["images"])
             posts.append(response)
 
-        # if not all(post["ok"] for post in posts):
-        if True:
+        if not all(post["ok"] for post in posts):
             print("Error creating post in Slack")
             for post in posts:
                 self.client.chat_delete(channel=self.channel_id, ts=post["ts"])
