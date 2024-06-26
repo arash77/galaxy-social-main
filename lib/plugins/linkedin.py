@@ -11,13 +11,15 @@ class linkedin_client:
             "Authorization": f"Bearer {access_token}",
             "Content-Type": "application/json",
             "X-Restli-Protocol-Version": "2.0.0",
-            "LinkedIn-Version": "202403",
+            "LinkedIn-Version": "202406",
         }
+        org = requests.get(self.api_base_url + "organizations", headers=self.headers)
+        self.organization_urn = org.json()["elements"][0]["entityUrn"]
 
     def linkedin_post(self, content):
         url = self.api_base_url + "posts"
         data = {
-            "author": "urn:li:organization:5515715",
+            "author": self.organization_urn,
             "commentary": content,
             "visibility": "PUBLIC",
             "distribution": {

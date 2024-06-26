@@ -31,6 +31,13 @@ plugins:
       access_token: $SLACK_ACCESS_TOKEN
       channel_id: "C06TRSSQRSR"
       max_content_length: 40000
+    
+  - name: linkedin
+    class: linkedin.linkedin_client
+    enabled: true
+    config:
+      access_token: $LINKEDIN_ACCESS_TOKEN
+      max_content_length: 3000
 
   - name: markdown
     class: markdown.markdown_client
