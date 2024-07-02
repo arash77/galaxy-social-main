@@ -37,6 +37,7 @@ plugins:
     enabled: true
     config:
       access_token: $LINKEDIN_ACCESS_TOKEN
+      org_id: 102246356
       max_content_length: 3000
 
   - name: markdown
