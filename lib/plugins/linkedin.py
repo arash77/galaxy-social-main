@@ -1,14 +1,17 @@
-import requests
+import os
 import re
 import textwrap
+
+import requests
 
 
 class linkedin_client:
     def __init__(self, **kwargs):
-        self.api_base_url = kwargs.get("base_url", "https://matrix.org")
+        self.api_base_url = kwargs.get("base_url", "https://api.linkedin.com/rest")
         self.organization_urn = f"urn:li:organization:{kwargs.get('org_id')}"
+        self.access_token = kwargs.get("access_token")
         self.headers = {
-            "Authorization": f"Bearer {kwargs.get('access_token')}",
+            "Authorization": f"Bearer {self.access_token}",
             "Content-Type": "application/json",
             "X-Restli-Protocol-Version": "2.0.0",
             "LinkedIn-Version": "202406",
@@ -46,9 +49,9 @@ class linkedin_client:
     def format_content(self, content, mentions, hashtags, images, **kwargs):
         mentions = " ".join([f"@{v}" for v in mentions])
         hashtags = " ".join([f"#{v}" for v in hashtags])
-        if len(images) > 4:
-            warnings = f"A maximum of four images, not {len(images)}, can be included in a single bluesky post."
-            images = images[:4]
+        if len(images) > 20:
+            warnings = f"A maximum of 20 images, not {len(images)}, can be included in a single linkedin post."
+            images = images[:20]
         else:
             warnings = ""
 
@@ -71,62 +74,119 @@ class linkedin_client:
         preview += "\n\n" + images_preview
         return formatted_content, preview, warnings
 
-    def linkedin_post(self, content):
-        data = {
-            "author": self.organization_urn,
-            "commentary": content,
-            "visibility": "PUBLIC",
-            "distribution": {
-                "feedDistribution": "MAIN_FEED",
-                "targetEntities": [],
-                "thirdPartyDistributionChannels": [],
-            },
-            "lifecycleState": "PUBLISHED",
-            "isReshareDisabledByAuthor": False,
-        }
-        response = requests.post(
-            f"{self.api_base_url}/posts", headers=self.headers, json=data
-        )
-        if response.status_code == 201:
-            return True, response.headers.get("x-restli-id")
-        else:
-            return False, response.text
+    def linkedin_post(self, content, images):
+        try:
+            data = {
+                "author": self.organization_urn,
+                "commentary": content,
+                "visibility": "PUBLIC",
+                "distribution": {
+                    "feedDistribution": "MAIN_FEED",
+                    "targetEntities": [],
+                    "thirdPartyDistributionChannels": [],
+                },
+                "lifecycleState": "PUBLISHED",
+                "isReshareDisabledByAuthor": False,
+            }
+            if images:
+                data["content"] = self.linkedin_upload_images(images)
+                if not data["content"]:
+                    return None
+            response = requests.post(
+                f"{self.api_base_url}/posts", headers=self.headers, json=data
+            )
+            if response.status_code == 201:
+                return response.headers.get("x-restli-id")
+            else:
+                print(response.text)
+                return None
+        except Exception as e:
+            print(str(e))
+            return None
 
-    def linkedin_post_with_images(self, content, images):
-        # upload images
-        data = {
-            "author": self.organization_urn,
-            "commentary": content,
-            "visibility": "PUBLIC",
-            "distribution": {
-                "feedDistribution": "MAIN_FEED",
-                "targetEntities": [],
-                "thirdPartyDistributionChannels": [],
-            },
-            "lifecycleState": "PUBLISHED",
-            "isReshareDisabledByAuthor": False,
-            "media": [
-                {
-                    "status": "READY",
-                    "media": images,
-                    "title": "image",
-                    "description": "image",
-                    "mediaType": "IMAGE",
-                }
-            ],
-        }
-        response = requests.post(
-            f"{self.api_base_url}/posts", headers=self.headers, json=data
-        )
-        if response.status_code == 201:
-            return True, response.headers.get("x-restli-id")
-        else:
-            return False, response.text
+    def linkedin_upload_images(self, images):
+        try:
+            image_upload = []
+            for image in images:
+                data = {"initializeUploadRequest": {"owner": self.organization_urn}}
+                response = requests.post(
+                    f"{self.api_base_url}/images?action=initializeUpload",
+                    headers=self.headers,
+                    json=data,
+                )
+                upload_url = response.json()["value"]["uploadUrl"]
+                filename = os.path.basename(image["url"])
+                with requests.get(image["url"], stream=True) as r:
+                    r.raise_for_status()
+                    with open(filename, "wb") as f:
+                        for chunk in r.iter_content(chunk_size=8192):
+                            f.write(chunk)
+                with open(filename, "rb") as file:
+                    response = requests.put(
+                        upload_url,
+                        headers={"Authorization": f"Bearer {self.access_token}"},
+                        data=file,
+                    )
+                image_id = response.json()["value"]["image"]
+                image_upload.append(
+                    {"id": image_id, "altText": image.get("alt_text", "")}
+                )
+            content = (
+                {"media": image_upload[0]}
+                if len(image_upload) == 1
+                else {"multiImage": {"images": image_upload}}
+            )
+            return content
+        except Exception as e:
+            print(str(e))
+            return None
+
+    def linkedin_comment(self, content, post_id):
+        try:
+            data = {
+                "actor": self.organization_urn,
+                "object": post_id,
+                "message": {"text": content},
+            }
+            response = requests.post(
+                f"{self.api_base_url}/socialActions/{post_id}/comments",
+                headers=self.headers,
+                json=data,
+            )
+            if response.status_code == 201:  # should be checked
+                return True
+            else:
+                print(response.text)
+                return False
+        except Exception as e:
+            print(str(e))
+            return False
+
+    def linkedin_delete_post(self, post_id):
+        try:
+            response = requests.delete(
+                f"{self.api_base_url}/posts/{post_id}", headers=self.headers
+            )
+            if response.status_code == 204:
+                return True
+            else:
+                print(response.text)
+                return False
+        except Exception as e:
+            print(str(e))
+            return False
 
     def create_post(self, content, **kwargs):
+        post_id = None
         for text in content["chunks"]:
-            status, message = self.linkedin_post(text)
-            if not status:
-                return status, None
-            link = f"https://www.linkedin.com/feed/update/{message}"
-            return status, link
+            if not post_id:
+                post_id = self.linkedin_post(text, content.get("images"))
+                if not post_id:
+                    return False, None
+                link = f"https://www.linkedin.com/feed/update/{post_id}"
+            else:
+                comment_id = self.linkedin_comment(text, post_id)
+                if not comment_id:
+                    self.linkedin_delete_post(post_id)
+                    return False, None
+            return True, link
