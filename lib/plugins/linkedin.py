@@ -1,6 +1,7 @@
 import os
 import re
 import textwrap
+from urllib.parse import quote
 
 import requests
 
@@ -12,7 +13,6 @@ class linkedin_client:
         self.access_token = kwargs.get("access_token")
         self.headers = {
             "Authorization": f"Bearer {self.access_token}",
-            "Content-Type": "application/json",
             "X-Restli-Protocol-Version": "2.0.0",
             "LinkedIn-Version": "202406",
         }
@@ -92,14 +92,13 @@ class linkedin_client:
                 data["content"] = self.linkedin_upload_images(images)
                 if not data["content"]:
                     return None
+            headers = self.headers
+            headers["Content-Type"] = "application/json"
             response = requests.post(
-                f"{self.api_base_url}/posts", headers=self.headers, json=data
+                f"{self.api_base_url}/posts", headers=headers, json=data
             )
-            if response.status_code == 201:
-                return response.headers.get("x-restli-id")
-            else:
-                print(response.text)
-                return None
+            response.raise_for_status()
+            return response.headers.get("x-restli-id")
         except Exception as e:
             print(str(e))
             return None
@@ -114,6 +113,7 @@ class linkedin_client:
                     headers=self.headers,
                     json=data,
                 )
+                response.raise_for_status()
                 upload_url = response.json()["value"]["uploadUrl"]
                 filename = os.path.basename(image["url"])
                 with requests.get(image["url"], stream=True) as r:
@@ -127,6 +127,7 @@ class linkedin_client:
                         headers={"Authorization": f"Bearer {self.access_token}"},
                         data=file,
                     )
+                    response.raise_for_status()
                 image_id = response.json()["value"]["image"]
                 image_upload.append(
                     {"id": image_id, "altText": image.get("alt_text", "")}
@@ -148,30 +149,28 @@ class linkedin_client:
                 "object": post_id,
                 "message": {"text": content},
             }
+            headers = self.headers
+            headers["Content-Type"] = "application/json"
             response = requests.post(
-                f"{self.api_base_url}/socialActions/{post_id}/comments",
-                headers=self.headers,
+                f"{self.api_base_url}/socialActions/{quote(post_id)}/comments",
+                headers=headers,
                 json=data,
             )
-            if response.status_code == 201:  # should be checked
-                return True
-            else:
-                print(response.text)
-                return False
+            response.raise_for_status()
+            return True
         except Exception as e:
             print(str(e))
             return False
 
     def linkedin_delete_post(self, post_id):
         try:
+            headers = self.headers
+            headers["X-RestLi-Method"] = "DELETE"
             response = requests.delete(
-                f"{self.api_base_url}/posts/{post_id}", headers=self.headers
+                f"{self.api_base_url}/posts/{quote(post_id)}", headers=headers
             )
-            if response.status_code == 204:
-                return True
-            else:
-                print(response.text)
-                return False
+            response.raise_for_status()
+            return True
         except Exception as e:
             print(str(e))
             return False
@@ -183,10 +182,10 @@ class linkedin_client:
                 post_id = self.linkedin_post(text, content.get("images"))
                 if not post_id:
                     return False, None
-                link = f"https://www.linkedin.com/feed/update/{post_id}"
             else:
                 comment_id = self.linkedin_comment(text, post_id)
                 if not comment_id:
                     self.linkedin_delete_post(post_id)
                     return False, None
-            return True, link
+        link = f"https://www.linkedin.com/feed/update/{post_id}"
+        return True, link
