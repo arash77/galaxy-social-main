@@ -114,7 +114,8 @@ class linkedin_client:
                     json=data,
                 )
                 response.raise_for_status()
-                upload_url = response.json()["value"]["uploadUrl"]
+                value = response.json().get("value")
+                upload_url = value["uploadUrl"]
                 filename = os.path.basename(image["url"])
                 with requests.get(image["url"], stream=True) as r:
                     r.raise_for_status()
@@ -128,7 +129,7 @@ class linkedin_client:
                         data=file,
                     )
                     response.raise_for_status()
-                image_id = response.json()["value"]["image"]
+                image_id = value["image"]
                 image_upload.append(
                     {"id": image_id, "altText": image.get("alt_text", "")}
                 )
