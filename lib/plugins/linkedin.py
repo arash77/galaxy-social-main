@@ -48,7 +48,7 @@ class linkedin_client:
 
     def format_content(self, content, mentions, hashtags, images, **kwargs):
         mentions = " ".join([f"@{v}" for v in mentions])
-        hashtags = " ".join([f"#{v}" for v in hashtags])
+        hashtags = " ".join([f"#{v}" for v in hashtags]) # the mentions are not linked to anyone!
         if len(images) > 20:
             warnings = f"A maximum of 20 images, not {len(images)}, can be included in a single linkedin post."
             images = images[:20]
