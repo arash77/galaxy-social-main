@@ -145,6 +145,7 @@ class bluesky_client:
             if image_tag and hasattr(image_tag, "attrs")
             else None
         )
+        thumb = None
         if isinstance(image_url, str):
             thumb = self.blueskysocial.upload_blob(requests.get(image_url).content).blob
         embed_external = atproto.models.AppBskyEmbedExternal.Main(
