@@ -23,9 +23,30 @@ class github_run:
             return
 
         # Delete old comments of the bot
-        for comment in self.pr.get_issue_comments():
-            if comment.user.login == "github-actions[bot]":
-                comment.delete()
+        # mutation = (
+        #     "mutation minimizeComment($id: ID!, $classifier: ReportedContentClassifiers!) {\n"
+        #     "  minimizeComment(input: { subjectId: $id, classifier: $classifier }) {\n"
+        #     "    clientMutationId\n"
+        #     "    minimizedComment {\n"
+        #     "      isMinimized\n"
+        #     "      minimizedReason\n"
+        #     "      viewerCanMinimize\n"
+        #     "    }\n"
+        #     "  }\n"
+        #     "}"
+        # )
+        # headers = {
+        #     "Authorization": f'bearer {os.getenv("GITHUB_TOKEN")}',
+        #     "Accept": "application/vnd.github.starfire-preview+json",
+        # }
+        # for comment in self.pr.get_issue_comments():
+        #     if comment.user.login == "github-actions[bot]":
+        #         variables = {"id": comment.id, "classifier": "OUTDATED"}
+        #         response = requests.post(
+        #             "https://api.github.com/graphql",
+        #             headers=headers,
+        #             json={"query": mutation, "variables": variables},
+        #         )
 
         # Enclose mentions and hashtags in backticks before commenting
         # so that they stand out for the reviewer and to prevent accidental
