@@ -6,6 +6,7 @@ plugins:
       base_url: "https://mstdn.science"
       access_token: $MASTODON_ACCESS_TOKEN
       max_content_length: 500
+      ignore_markdown: true
 
   - name: bluesky
     class: bluesky.bluesky_client
@@ -15,6 +16,7 @@ plugins:
       username: "brilliantarash.bsky.social"
       password: $BLUESKY_PASSWORD
       max_content_length: 300
+      ignore_markdown: true
 
   - name: matrix
     class: matrix.matrix_client
@@ -39,6 +41,7 @@ plugins:
       access_token: $LINKEDIN_ACCESS_TOKEN
       org_id: 102246356
       max_content_length: 3000
+      ignore_markdown: true
 
   - name: markdown
     class: markdown.markdown_client
