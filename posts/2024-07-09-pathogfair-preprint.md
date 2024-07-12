@@ -2,6 +2,7 @@
 media:
   - mastodon
   - matrix
+  - bluesky
 
 mentions:
   mastodon:
@@ -9,6 +10,10 @@ mentions:
 
 hashtags:
   mastodon:
+    - metagenomics
+    - pathogen
+    - usegalaxy
+  bluesky:
     - metagenomics
     - pathogen
     - usegalaxy
@@ -41,8 +46,6 @@ PathoGFAIR consists of 5 workflows:
 
 **🌟 Embracing FAIR Principles**  
 These workflows adhere to FAIR (Findable, Accessible, Interoperable, Reusable) principles, ensuring they are easy to find (via WorkflowHub and Dockstore), share, adapt, and integrate with other data and tools. This enhances collaboration and transparency in pathogen research.
-
-![graphical abstract](./images/2024-07-09-pathogair-preprint-graphical-abstract.png)
 
 
 **📚 Training Material Available**  
