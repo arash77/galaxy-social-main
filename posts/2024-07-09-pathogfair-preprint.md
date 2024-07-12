@@ -2,6 +2,7 @@
 media:
   - mastodon
   - matrix
+  - bluesky
 
 mentions:
   mastodon:
@@ -9,6 +10,10 @@ mentions:
 
 hashtags:
   mastodon:
+    - metagenomics
+    - pathogen
+    - usegalaxy
+  bluesky:
     - metagenomics
     - pathogen
     - usegalaxy
