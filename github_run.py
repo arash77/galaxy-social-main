@@ -18,35 +18,28 @@ class github_run:
         self.repo = g.get_repo(os.getenv("GITHUB_REPOSITORY"))
         self.pr = self.repo.get_pull(int(os.getenv("PR_NUMBER")))
 
-    def comment(self, comment_text):
+    def comment(self, comment_text, **kwargs):
         if not comment_text:
             return
 
-        # Delete old comments of the bot
-        # mutation = (
-        #     "mutation minimizeComment($id: ID!, $classifier: ReportedContentClassifiers!) {\n"
-        #     "  minimizeComment(input: { subjectId: $id, classifier: $classifier }) {\n"
-        #     "    clientMutationId\n"
-        #     "    minimizedComment {\n"
-        #     "      isMinimized\n"
-        #     "      minimizedReason\n"
-        #     "      viewerCanMinimize\n"
-        #     "    }\n"
-        #     "  }\n"
-        #     "}"
-        # )
-        # headers = {
-        #     "Authorization": f'bearer {os.getenv("GITHUB_TOKEN")}',
-        #     "Accept": "application/vnd.github.starfire-preview+json",
-        # }
-        # for comment in self.pr.get_issue_comments():
-        #     if comment.user.login == "github-actions[bot]":
-        #         variables = {"id": comment.id, "classifier": "OUTDATED"}
-        #         response = requests.post(
-        #             "https://api.github.com/graphql",
-        #             headers=headers,
-        #             json={"query": mutation, "variables": variables},
-        #         )
+        if kwargs.get("preview"):
+            query = "mutation($input: MinimizeCommentInput!) { minimizeComment(input: $input) { minimizedComment { isMinimized minimizedReason } } }"
+            headers = {
+                "Authorization": f"Bearer {self.github_token}",
+                "Content-Type": "application/json",
+            }
+            for comment in self.pr.get_issue_comments():
+                if comment.user.login == "github-actions[bot]":
+                    comment_node_id = requests.get(comment.url).json()["node_id"]
+                    variables = {
+                        "subjectId": comment_node_id,
+                        "classifier": "OUTDATED",
+                    }
+                    response = requests.post(
+                        "https://api.github.com/graphql",
+                        headers=headers,
+                        json=({"query": query, "variables": {"input": variables}}),
+                    )
 
         # Enclose mentions and hashtags in backticks before commenting
         # so that they stand out for the reviewer and to prevent accidental
@@ -190,7 +183,7 @@ if __name__ == "__main__":
 
     try:
         message = gs.process_files(files_to_process)
-        github_instance.comment(message)
+        github_instance.comment(message, preview=args.preview)
         if args.preview:
             sys.exit()
 
