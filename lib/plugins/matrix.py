@@ -5,7 +5,7 @@ import aiofiles.os
 import magic
 import requests
 from bs4 import BeautifulSoup
-from markdown import markdown
+from markdown2 import markdown
 from nio import AsyncClient, UploadResponse
 from PIL import Image
 
@@ -55,10 +55,8 @@ class matrix_client:
             content = f"{mentions_string}: {content}"
         if hashtags:
             content += "\n\n" + " ".join([f"\\#{h}" for h in hashtags])
-        formatted_body = markdown(content)
-        body = BeautifulSoup(formatted_body, features="html.parser").get_text(
-            "\n", strip=True
-        )
+        formatted_body = markdown(content, extras=["link-patterns"])
+        body = BeautifulSoup(formatted_body, features="html.parser").get_text()
         message_content["body"] = body
         message_content["formatted_body"] = formatted_body
         formatted_content.append(message_content)
@@ -66,7 +64,7 @@ class matrix_client:
         await self.client.close()
         return (
             formatted_content,
-            preview + "\n" + content,
+            preview + "\n" + message_content["formatted_body"],
             warnings,
         )
 
