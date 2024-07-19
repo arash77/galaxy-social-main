@@ -55,7 +55,7 @@ class matrix_client:
             content = f"{mentions_string}: {content}"
         if hashtags:
             content += "\n\n" + " ".join([f"\\#{h}" for h in hashtags])
-        formatted_body = markdown(content, extras=["link-patterns"])
+        formatted_body = markdown(content, extras=["cuddled-lists"])
         body = BeautifulSoup(formatted_body, features="html.parser").get_text()
         message_content["body"] = body
         message_content["formatted_body"] = formatted_body
