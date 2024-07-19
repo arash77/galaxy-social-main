@@ -14,7 +14,8 @@ from lib.galaxy_social import galaxy_social
 
 class github_run:
     def __init__(self):
-        g = github.Github(os.getenv("GITHUB_TOKEN"))
+        self.github_token = os.getenv("GITHUB_TOKEN")
+        g = github.Github(self.github_token)
         self.repo = g.get_repo(os.getenv("GITHUB_REPOSITORY"))
         self.pr = self.repo.get_pull(int(os.getenv("PR_NUMBER")))
 
