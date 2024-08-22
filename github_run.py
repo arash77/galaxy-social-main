@@ -124,12 +124,12 @@ class github_run:
                 metadata["media"] = media
                 metadata["mentions"] = {
                     key: value
-                    for key, value in metadata["mentions"].items()
+                    for key, value in metadata.get("mentions",{}).items()
                     if key in media
                 }
                 metadata["hashtags"] = {
                     key: value
-                    for key, value in metadata["hashtags"].items()
+                    for key, value in metadata.get("hashtags",{}).items()
                     if key in media
                 }
             new_md_content = f"---\n{yaml.dump(metadata)}---\n{text}"
