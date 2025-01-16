@@ -1,43 +1,33 @@
-import argparse
-import fnmatch
 import json
 import os
 import re
 import sys
 
 import github
-import requests
 import yaml
 
 from lib.galaxy_social import galaxy_social
 
 
 class github_run:
-    def __init__(self):
-        self.github_token = os.getenv("GITHUB_TOKEN")
-        g = github.Github(self.github_token)
+    def __init__(
+        self, pr_number, processed_files_path, processed_files_branch="processed_files"
+    ):
+        g = github.Github(os.getenv("GITHUB_TOKEN"))
         self.repo = g.get_repo(os.getenv("GITHUB_REPOSITORY"))
-        self.pr = self.repo.get_pull(int(os.getenv("PR_NUMBER")))
+        self.pr = self.repo.get_pull(pr_number)
+        self.processed_files_path = processed_files_path
+        self.processed_files_branch = processed_files_branch
 
     def comment(self, comment_text, **kwargs):
         if not comment_text:
             return
         # Hide old comments of the bot
         if kwargs.get("preview"):
-            query = "mutation($input: MinimizeCommentInput!) { minimizeComment(input: $input) { minimizedComment { isMinimized minimizedReason } } }"
-            headers = {
-                "Authorization": f"Bearer {self.github_token}",
-                "Content-Type": "application/json",
-            }
             for comment in self.pr.get_issue_comments():
                 if comment.user.login == "github-actions[bot]":
-                    comment_node_id = requests.get(comment.url).json()["node_id"]
-                    variables = {"subjectId": comment_node_id, "classifier": "OUTDATED"}
-                    requests.post(
-                        "https://api.github.com/graphql",
-                        headers=headers,
-                        json=({"query": query, "variables": {"input": variables}}),
-                    )
+                    comment.minimize()
+
         # Enclose mentions and hashtags in backticks before commenting
         # so that they stand out for the reviewer and to prevent accidental
         # mentioning of github users.
@@ -69,31 +59,18 @@ class github_run:
         return True
 
     def get_files(self):
-        for file in self.pr.get_files():
-            raw_url = file.raw_url
-            if raw_url.endswith(".md"):
-                response = requests.get(raw_url)
-                if response.status_code == 200:
-                    changed_file_path = file.filename
-                    os.makedirs(
-                        os.path.dirname(changed_file_path),
-                        exist_ok=True,
-                    )
-                    with open(changed_file_path, "w") as f:
-                        f.write(response.text)
-
-        changed_files = os.environ.get("CHANGED_FILES")
         files_to_process = []
-        if changed_files:
-            for file_path in eval(changed_files.replace("\\", "")):
-                if file_path.endswith(".md"):
-                    files_to_process.append(file_path)
-        else:
-            print("No changed files found, processing all files.")
-            for root, _, files in os.walk("posts"):
-                for filename in fnmatch.filter(files, "*.md"):
-                    file_path = os.path.join(root, filename)
-                    files_to_process.append(file_path)
+        for file in self.pr.get_files():
+            file_path = file.filename
+            if file_path.endswith(".md"):
+                head_branch = self.pr.head
+                pr_content = head_branch.repo.get_contents(
+                    file_path, ref=head_branch.sha
+                ).decoded_content.decode()
+                os.makedirs(os.path.dirname(file_path), exist_ok=True)
+                with open(file_path, "w") as f:
+                    f.write(pr_content)
+                files_to_process.append(file_path)
 
         return files_to_process
 
@@ -109,7 +86,7 @@ class github_run:
         for file_path, media in not_posted.items():
             new_file_path = os.path.join(
                 os.path.dirname(file_path),
-                f"retry-{self.pr.number}-{os.path.basename(file_path)}",
+                f"retry-{self.pr.number}_{os.path.basename(file_path)}",
             )
             message = f"Add failed post for file {file_path} from PR {self.pr.number}"
             with open(file_path, "r") as f:
@@ -118,17 +95,14 @@ class github_run:
             metadata = yaml.safe_load(metadata)
             if media:
                 metadata["media"] = media
-                metadata["mentions"] = {
-                    key: value
-                    for key, value in metadata.get("mentions", {}).items()
-                    if key in media
-                }
-                metadata["hashtags"] = {
-                    key: value
-                    for key, value in metadata.get("hashtags", {}).items()
-                    if key in media
-                }
-            new_md_content = f"---\n{yaml.dump(metadata)}---\n{text}"
+                for meta in ["mentions", "hashtags"]:
+                    if meta in metadata:
+                        new_metadata = {}
+                        for key, value in metadata[meta].items():
+                            if key in media:
+                                new_metadata[key] = value
+                        metadata[meta] = new_metadata
+            new_md_content = f"---\n{yaml.dump(metadata, sort_keys=False)}---\n{text}"
             self.repo.create_file(
                 path=new_file_path,
                 message=message,
@@ -137,7 +111,7 @@ class github_run:
             )
             created_files.append(f"`{file_path}` to `{', '.join(metadata['media'])}`")
 
-        title = f"Try to post failed posts from PR {self.pr.number}"
+        title = f"Try to post failed posts from #{self.pr.number}"
         body = (
             f"Failed to post the following from #{self.pr.number}:\n- "
             + "\n- ".join(created_files)
@@ -149,9 +123,8 @@ class github_run:
             head=branch_name,
         )
 
-        self.repo.get_workflow("preview.yml").create_dispatch(
-            ref="main",
-            inputs={"pr_number": new_pr.number},
+        self.repo.get_workflow("galaxy_social.yml").create_dispatch(
+            ref="main", inputs={"pr_number": str(new_pr.number)}
         )
 
         self.comment(
@@ -159,34 +132,80 @@ class github_run:
             f"I created a new PR for failed posts: {new_pr.html_url}"
         )
 
+    def initialize_processed_files_branch(self):
+        try:
+            branch = self.repo.get_branch(self.processed_files_branch)
+        except:
+            self.repo.create_git_ref(
+                ref=f"refs/heads/{self.processed_files_branch}",
+                sha=self.repo.get_branch("main").commit.sha,
+            )
+            message = f"Initialize {self.processed_files_branch} with {self.processed_files_path}"
+            self.repo.create_file(
+                path=self.processed_files_path,
+                message=message,
+                content="{}",
+                branch=self.processed_files_branch,
+            )
+            print(message)
+            branch = self.repo.get_branch(self.processed_files_branch)
+
+        file_content = self.repo.get_contents(
+            self.processed_files_path, ref=branch.commit.sha
+        )
+        processed_files = file_content.decoded_content.decode()
+        with open(self.processed_files_path, "w") as f:
+            f.write(processed_files)
+        print(f"processed_files:\n {processed_files}")
+
+    def commit_processed_files(self):
+        with open(self.processed_files_path, "r") as file:
+            file_data = file.read()
+        processed_files_content_file = self.repo.get_contents(
+            self.processed_files_path, ref=self.processed_files_branch
+        )
+        message = f"Update {self.processed_files_path}"
+        self.repo.update_file(
+            path=self.processed_files_path,
+            message=message,
+            content=file_data,
+            sha=processed_files_content_file.sha,
+            branch=self.processed_files_branch,
+        )
+        print(message)
+        return json.loads(file_data)
+
 
 if __name__ == "__main__":
-    github_instance = github_run()
+    with open(os.getenv("GITHUB_EVENT_PATH", ""), "r") as f:
+        event_data = json.load(f)
+    pr_number = event_data.get("number") or int(
+        event_data.get("inputs", {}).get("pr_number")
+    )
+    closed = event_data.get("action") == "closed"
+    merged = event_data.get("pull_request", {}).get("merged", False)
+    preview = not merged and not closed
+    if not merged and closed:
+        print("No action to take")
+        sys.exit(0)
+
+    github_instance = github_run(pr_number, "processed_files.json")
     files_to_process = github_instance.get_files()
     if not files_to_process:
         github_instance.comment("No files to process.")
         sys.exit()
 
-    parser = argparse.ArgumentParser(description="Galaxy Social.")
-    parser.add_argument("--preview", action="store_true", help="Preview the post")
-    parser.add_argument(
-        "--json-out",
-        help="Output json file for processed files",
-        default="processed_files.json",
-    )
-    args = parser.parse_args()
-
-    gs = galaxy_social(args.preview, args.json_out)
-
+    gs = galaxy_social(preview)
     try:
-        message = gs.process_files(files_to_process)
-        github_instance.comment(message, preview=args.preview)
-        if args.preview:
+        github_instance.initialize_processed_files_branch()
+        message = gs.process_files(
+            files_to_process, github_instance.processed_files_path
+        )
+        github_instance.comment(message, preview=preview)
+        if preview:
             sys.exit()
 
-        with open(args.json_out, "r") as file:
-            processed_files = json.load(file)
-
+        processed_files = github_instance.commit_processed_files()
         not_posted = {}
         for file_path, social_stat_dict in processed_files.items():
             if file_path in files_to_process:
@@ -198,12 +217,10 @@ if __name__ == "__main__":
                     not_posted[file_path] = media_list
 
         github_instance.new_pr(not_posted)
-
     except Exception as e:
-        if args.preview:
+        if preview:
             github_instance.comment("Something went wrong, an Admin will take a look.")
         else:
             not_posted = {file_path: [] for file_path in files_to_process}
             github_instance.new_pr(not_posted)
-
         raise e
