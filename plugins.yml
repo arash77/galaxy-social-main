@@ -57,3 +57,12 @@ plugins:
       base_url: "https://mastodon.social"
       access_token: $VGP_MASTODON
       max_content_length: 500
+
+  - name: bluesky-vgp
+    class: bluesky.bluesky_client
+    enabled: true
+    config:
+      base_url: "https://bsky.social"
+      username: "vertebrategenomes.bsky.social"
+      password: $VGP_BLUESKY_PASSWORD
+      max_content_length: 300
