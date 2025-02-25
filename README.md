@@ -2,7 +2,7 @@
 
 <div align="center">
       👇</br>
-      <kbd><a href="../../new/main/?filename=posts/2025/<your-path>.md&value=---%0Amedia:%0A%20-%20mastodon-eu-freiburg%0A%20-%20matrix-eu-announce%0A%20-%20mastodon-galaxyproject%0A%20-%20bluesky-galaxyproject%0A%20-%20linkedin-galaxyproject%0A%20-%20bluesky-vgp%0A%20-%20mastodon-vgp%0A%0Amentions:%0A%20mastodon-eu-freiburg:%0A%20%20-%20galaxyproject@mstdn.science%0A%20mastodon-galaxyproject:%0A%20%20-%20galaxyfreiburg@bawü.social%0A%20bluesky-galaxyproject:%0A%20%20-%20galaxyproject.bsky.social%0A%20matrix-eu-announce:%0A%20%20-%20bgruening:matrix.org%0A%0Ahashtags:%0A%20mastodon-eu-freiburg:%0A%20%20-%20UseGalaxy%0A%20%20-%20GalaxyProject%0A%20%20-%20UniFreiburg%0A%20%20-%20EOSC%0A%20%20-%20EuroScienceGateway%0A%20mastodon-galaxyproject:%0A%20%20-%20UseGalaxy%0A%20bluesky-galaxyproject:%0A%20%20-%20UseGalaxy%0A%20%20-%20GalaxyProject%0A%20%20-%20UniFreiburg%0A%20%20-%20EOSC%0A%20%20-%20EuroScienceGateway%0A%20linkedin-galaxyproject:%0A%20%20-%20UseGalaxy%0A%20%20-%20GalaxyProject%0A%20%20-%20UniFreiburg%0A%20%20-%20EOSC%0A%20%20-%20EuroScienceGateway%0A---%0AYour%20text%20content%20goes%20here.%20(Markdown%20syntax%20will%20not%20pass%20to%20Bluesky,%20Mastodon,%20and%20Linkedin!)%0AFor%20images%20just%20drag%20and%20drop%20them%20here.%20they%20will%20look%20like%20this:%0A![A](https://example.com/a.jpg)">Create new post</a></kbd>
+      <kbd><a href="../../new/main/?filename=posts/2025/<your-path>.md&value=">Create new post</a></kbd>
 </div>
 
 ## How to Create a Post
@@ -23,8 +23,6 @@ media:
  - mastodon-galaxyproject
  - bluesky-galaxyproject
  - linkedin-galaxyproject
- - bluesky-vgp
- - mastodon-vgp
 
 mentions:
  mastodon-eu-freiburg:
