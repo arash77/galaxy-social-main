@@ -63,11 +63,11 @@ def extract_secrets_from_workflow(workflow_data):
 def validate_secrets(plugins_file, workflow_file):
     logging.info(f"Validating secrets in {plugins_file} and {workflow_file} ...")
     head_branch = pr.head
-    plugins_contents = head_branch.repo.get_contents(plugins_file, ref=head_branch.sha)
+    head_repo = head_branch.repo
+    branch_name = head_branch.ref
+    plugins_contents = head_repo.get_contents(plugins_file, ref=branch_name)
     plugins_data = yaml.safe_load(plugins_contents.decoded_content.decode())
-    workflow_contents = head_branch.repo.get_contents(
-        workflow_file, ref=head_branch.sha
-    )
+    workflow_contents = head_repo.get_contents(workflow_file, ref=branch_name)
     workflow_data = yaml.safe_load(workflow_contents.decoded_content.decode())
     if plugins_data is None or workflow_data is None:
         logging.error("Failed to load plugins or workflow data.")
@@ -76,12 +76,8 @@ def validate_secrets(plugins_file, workflow_file):
     enabled_plugins, plugin_secrets = extract_secrets_from_plugins(plugins_data)
     workflow_secrets = extract_secrets_from_workflow(workflow_data) - {"GITHUB_TOKEN"}
 
-    plugins_blob = (
-        f"[plugins.yml]({head_branch.repo.get_contents(plugins_file).html_url})"
-    )
-    workflow_blob = (
-        f"[galaxy_social.yml]({head_branch.repo.get_contents(workflow_file).html_url})"
-    )
+    plugins_url = f"[plugins.yml]({plugins_contents.html_url})"
+    workflow_url = f"[galaxy_social.yml]({workflow_contents.html_url})"
 
     missing_in_workflow = plugin_secrets - workflow_secrets
     if missing_in_workflow:
@@ -93,8 +89,8 @@ def validate_secrets(plugins_file, workflow_file):
         )
         errors.append(
             "The following secrets are defined in **enabled plugins** in "
-            f"{plugins_blob} but are missing from the workflow environment in "
-            f"{workflow_blob}: {', '.join(missing_in_workflow)}. "
+            f"{plugins_url} but are missing from the workflow environment in "
+            f"{workflow_url}: {', '.join(missing_in_workflow)}. "
             "Please either add them to the workflow environment or remove them from `plugins.yml`.\n"
             "For example, update your workflow to include:\n"
             "```yaml\n"
@@ -107,8 +103,8 @@ def validate_secrets(plugins_file, workflow_file):
     if missing_in_plugins:
         errors.append(
             "The following secrets are defined in **workflow env** in "
-            f"{workflow_blob} but are not used by any enabled plugin in "
-            f"{plugins_blob}: {', '.join(missing_in_plugins)}. "
+            f"{workflow_url} but are not used by any enabled plugin in "
+            f"{plugins_url}: {', '.join(missing_in_plugins)}. "
             "Please either remove them from the workflow environment or ensure they are used in `plugins.yml`."
         )
 
@@ -148,20 +144,20 @@ def create_pr(body, readme_content, readme_sha):
     branch_name = f"update-readme-{pr.number}"
     repo.create_git_ref(
         ref=f"refs/heads/{branch_name}",
-        sha=repo.get_branch("main").commit.sha,
+        sha=repo.get_branch(pr.base.ref).commit.sha,
     )
     repo.update_file(
         path=readme_file,
         message="Update README.md",
         content=readme_content,
         sha=readme_sha,
-        branch="main",
+        branch=pr.base.ref,
     )
     try:
         new_pr = repo.create_pull(
             title="Update README file",
             body=body,
-            base="main",
+            base=pr.base.ref,
             head=branch_name,
         )
         logging.info(f"{body}\nCreated PR: {new_pr.html_url}")
@@ -174,8 +170,8 @@ def create_pr(body, readme_content, readme_sha):
 
 def update_readme(readme_path, new_media_names=[]):
     try:
-        contents = repo.get_contents(readme_path, ref="main")
-        readme_content = contents.decoded_content.decode("utf-8")
+        readme_contents = repo.get_contents(readme_path, ref=pr.base.ref)
+        readme_content = readme_contents.decoded_content.decode("utf-8")
     except Exception as e:
         logging.error(f"Error fetching {readme_path}: {e}")
         return
@@ -197,7 +193,7 @@ def update_readme(readme_path, new_media_names=[]):
         body = f"Updated README.md with new media names: {', '.join(new_media_names)}"
     else:
         body = "Updated README.md with new link"
-    create_pr(body, readme_content, contents.sha)
+    create_pr(body, readme_content, readme_contents.sha)
 
 
 if __name__ == "__main__":
