@@ -25,7 +25,8 @@ media:
 - linkedin
 - bluesky
 mentions:
-  mastodon: []
+  mastodon: 
+  - brilliantarash
   bluesky-vgp: []
   matrix: []
   slack: []
