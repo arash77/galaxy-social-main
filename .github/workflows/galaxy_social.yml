@@ -45,5 +45,5 @@ jobs:
           MATRIX_ACCESS_TOKEN: ${{ secrets.MATRIX_ACCESS_TOKEN }}
           SLACK_ACCESS_TOKEN: ${{ secrets.SLACK_ACCESS_TOKEN }}
           LINKEDIN_ACCESS_TOKEN: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
-          VGP_MASTODON: ${{ secrets.VGP_MASTODON }}
+          VGP_BLUESKY_PASSWORD: ${{ secrets.VGP_BLUESKY_PASSWORD }}
         run: python -u github_run.py
