@@ -2,7 +2,7 @@
 
 <div align="center">
       👇</br>
-      <kbd><a href="../../new/main/?filename=posts/2025/<your-path>.md&value=---%0Amedia:%0A%20-%20mastodon-eu-freiburg%0A%20-%20matrix-eu-announce%0A%20-%20mastodon-galaxyproject%0A%20-%20bluesky-galaxyproject%0A%20-%20linkedin-galaxyproject%0A%0Amentions:%0A%20mastodon-eu-freiburg:%0A%20%20-%20galaxyproject@mstdn.science%0A%20mastodon-galaxyproject:%0A%20%20-%20galaxyfreiburg@bawü.social%0A%20bluesky-galaxyproject:%0A%20%20-%20galaxyproject.bsky.social%0A%20matrix-eu-announce:%0A%20%20-%20bgruening:matrix.org%0A%0Ahashtags:%0A%20mastodon-eu-freiburg:%0A%20%20-%20UseGalaxy%0A%20%20-%20GalaxyProject%0A%20%20-%20UniFreiburg%0A%20%20-%20EOSC%0A%20%20-%20EuroScienceGateway%0A%20mastodon-galaxyproject:%0A%20%20-%20UseGalaxy%0A%20bluesky-galaxyproject:%0A%20%20-%20UseGalaxy%0A%20%20-%20GalaxyProject%0A%20%20-%20UniFreiburg%0A%20%20-%20EOSC%0A%20%20-%20EuroScienceGateway%0A%20linkedin-galaxyproject:%0A%20%20-%20UseGalaxy%0A%20%20-%20GalaxyProject%0A%20%20-%20UniFreiburg%0A%20%20-%20EOSC%0A%20%20-%20EuroScienceGateway%0A---%0AYour%20text%20content%20goes%20here.%20(Markdown%20syntax%20will%20not%20pass%20to%20Bluesky,%20Mastodon,%20and%20Linkedin!)%0AFor%20images%20just%20drag%20and%20drop%20them%20here.%20they%20will%20look%20like%20this:%0A![A](https://example.com/a.jpg)">Create new post</a></kbd>
+      <kbd><a href="../../new/main/?filename=posts/2025/<your-path>.md&value=---%0Amedia:%0A-%20mastodon%0A-%20bluesky-vgp%0A-%20matrix%0A-%20slack%0A-%20linkedin%0A-%20bluesky%0Amentions:%0A%20%20mastodon:%20[]%0A%20%20bluesky-vgp:%20[]%0A%20%20matrix:%20[]%0A%20%20slack:%20[]%0A%20%20linkedin:%20[]%0A%20%20bluesky:%20[]%0Ahashtags:%0A%20%20mastodon:%0A%20%20-%20UseGalaxy%0A%20%20-%20GalaxyProject%0A%20%20-%20UniFreiburg%0A%20%20-%20EOSC%0A%20%20-%20EuroScienceGateway%0A%20%20bluesky-vgp:%0A%20%20-%20UseGalaxy%0A%20%20-%20GalaxyProject%0A%20%20-%20UniFreiburg%0A%20%20-%20EOSC%0A%20%20-%20EuroScienceGateway%0A%20%20matrix:%0A%20%20-%20UseGalaxy%0A%20%20-%20GalaxyProject%0A%20%20-%20UniFreiburg%0A%20%20-%20EOSC%0A%20%20-%20EuroScienceGateway%0A%20%20slack:%0A%20%20-%20UseGalaxy%0A%20%20-%20GalaxyProject%0A%20%20-%20UniFreiburg%0A%20%20-%20EOSC%0A%20%20-%20EuroScienceGateway%0A%20%20linkedin:%0A%20%20-%20UseGalaxy%0A%20%20-%20GalaxyProject%0A%20%20-%20UniFreiburg%0A%20%20-%20EOSC%0A%20%20-%20EuroScienceGateway%0A%20%20bluesky:%0A%20%20-%20UseGalaxy%0A%20%20-%20GalaxyProject%0A%20%20-%20UniFreiburg%0A%20%20-%20EOSC%0A%20%20-%20EuroScienceGateway%0A%0A---%0AYour%20text%20content%20goes%20here.%20(Markdown%20syntax%20will%20not%20pass%20to%20Bluesky,%20Mastodon,%20and%20Linkedin!)%0AFor%20images%20just%20drag%20and%20drop%20them%20here.%20they%20will%20look%20like%20this:%0A![A](https://example.com/a.jpg)">Create new post</a></kbd>
 </div>
 
 ## How to Create a Post
@@ -18,43 +18,57 @@ To create a post on Galaxy Social, follow these steps:
 ```yaml
 ---
 media:
- - mastodon-eu-freiburg
- - matrix-eu-announce
- - mastodon-galaxyproject
- - bluesky-galaxyproject
- - linkedin-galaxyproject
-
+- mastodon
+- bluesky-vgp
+- matrix
+- slack
+- linkedin
+- bluesky
 mentions:
- mastodon-eu-freiburg:
-  - galaxyproject@mstdn.science
- mastodon-galaxyproject:
-  - galaxyfreiburg@bawü.social
- bluesky-galaxyproject:
-  - galaxyproject.bsky.social
- matrix-eu-announce:
-  - bgruening:matrix.org
-
+  mastodon: []
+  bluesky-vgp: []
+  matrix: []
+  slack: []
+  linkedin: []
+  bluesky: []
 hashtags:
- mastodon-eu-freiburg:
+  mastodon:
   - UseGalaxy
   - GalaxyProject
   - UniFreiburg
   - EOSC
   - EuroScienceGateway
- mastodon-galaxyproject:
-  - UseGalaxy
- bluesky-galaxyproject:
+  bluesky-vgp:
   - UseGalaxy
   - GalaxyProject
   - UniFreiburg
   - EOSC
   - EuroScienceGateway
- linkedin-galaxyproject:
+  matrix:
   - UseGalaxy
   - GalaxyProject
   - UniFreiburg
   - EOSC
   - EuroScienceGateway
+  slack:
+  - UseGalaxy
+  - GalaxyProject
+  - UniFreiburg
+  - EOSC
+  - EuroScienceGateway
+  linkedin:
+  - UseGalaxy
+  - GalaxyProject
+  - UniFreiburg
+  - EOSC
+  - EuroScienceGateway
+  bluesky:
+  - UseGalaxy
+  - GalaxyProject
+  - UniFreiburg
+  - EOSC
+  - EuroScienceGateway
+
 ---
 Your text content goes here. (Markdown syntax will not pass to Bluesky, Mastodon, and Linkedin!)
 For images just drag and drop them here. they will look like this:
