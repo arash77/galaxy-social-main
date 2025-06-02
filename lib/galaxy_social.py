@@ -7,6 +7,8 @@ from fnmatch import filter
 from importlib import import_module
 from typing import Any, Dict
 
+import emoji
+import requests
 from jsonschema import validate
 from yaml import safe_load as yaml
 
@@ -127,6 +129,22 @@ class galaxy_social:
         image_pattern = re.compile(r"!\[(.*?)\]\((.*?)\)")
         images = image_pattern.findall(text)
         plain_content = re.sub(image_pattern, "", text).strip()
+
+        # convert github emoji to unicode
+        plain_content = emoji.emojize(plain_content, language="alias")
+
+        # Check if all images are valid
+        for _, image in images:
+            response = requests.get(image)
+            if response.status_code != 200:
+                errors += f"- Failed to download image from URL: {image}\n"
+
+            if response.headers["Content-Type"] not in [
+                "image/jpeg",
+                "image/png",
+                "image/gif",
+            ]:
+                errors += f"- URL does not point to a supported image file: {image}\n"
 
         metadata["images"] = [
             {"url": image[1], "alt_text": image[0]} for image in images
