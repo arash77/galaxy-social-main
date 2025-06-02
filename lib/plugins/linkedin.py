@@ -52,6 +52,7 @@ class linkedin_client:
 
     def build_organization_mentions(self, mentions):
         output = []
+        warning = ""
         for mention in mentions:
             vanity_name = mention.strip()
             urn = None
@@ -68,8 +69,9 @@ class linkedin_client:
                     mention = elements[0].get("localizedName")
             except Exception as e:
                 print(f"[WARN] Failed to resolve @{mention}: {e}")
+                warning += f"Failed to resolve @{mention} to a valid organization. "
             output.append(f"@[{mention}]({urn})" if urn else f"@{mention}")
-        return " ".join(output)
+        return " ".join(output), warning
 
     def protect_mentions(self, content):
         protected_mentions = {}
