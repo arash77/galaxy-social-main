@@ -1,107 +1,48 @@
 plugins:
-  - name: mastodon-galaxyproject
+  - name: mastodon
     class: mastodon.mastodon_client
     enabled: true
     config:
       base_url: "https://mstdn.science"
       access_token: $MASTODON_ACCESS_TOKEN
       max_content_length: 500
-      account_url: "https://mstdn.science/@galaxyproject"
 
-  - name: bluesky-galaxyproject
+  - name: bluesky
     class: bluesky.bluesky_client
     enabled: true
     config:
       base_url: "https://bsky.social"
-      username: "galaxyproject.bsky.social"
+      username: $BLUESKY_USERNAME
       password: $BLUESKY_PASSWORD
       max_content_length: 300
-      account_url: "https://bsky.app/profile/galaxyproject.bsky.social"
 
-  - name: mastodon-eu-freiburg
-    class: mastodon.mastodon_client
-    enabled: true
-    config:
-      base_url: "https://xn--baw-joa.social"
-      access_token: $MASTODON_EU_FR_TOKEN
-      max_content_length: 500
-      account_url: "https://xn--baw-joa.social/@galaxyfreiburg"
-
-  - name: matrix-eu-announce
+  - name: matrix
     class: matrix.matrix_client
     enabled: true
     config:
       base_url: "https://matrix.org"
       access_token: $MATRIX_ACCESS_TOKEN
-      room_id: "!ArjKhGljVCmzqxhauY:matrix.org"
-      account_url: "https://matrix.to/#/!ArjKhGljVCmzqxhauY:matrix.org?via=matrix.org&via=t2bot.io&via=matrix.uni-freiburg.de"
+      room_id: $MATRIX_ROOM_ID
+      user_id: $MATRIX_USER_ID
 
   - name: slack
     class: slack.slack_client
-    enabled: false
+    enabled: true
     config:
       access_token: $SLACK_ACCESS_TOKEN
-      channel_id: ""
+      channel_id: $SLACK_CHANNEL_ID
       max_content_length: 40000
 
-  - name: linkedin-galaxyproject
+  - name: linkedin
     class: linkedin.linkedin_client
     enabled: true
     config:
       access_token: $LINKEDIN_ACCESS_TOKEN
-      org_id: 101662592  # Galaxy Project LinkedIn account
+      org_id: 11832
       max_content_length: 3000
-      account_url: "https://www.linkedin.com/company/galaxy-project"
 
   - name: markdown
     class: markdown.markdown_client
     enabled: true
     config:
       save_path: "markdown_cache"
-
-  - name: mastodon-brc
-    class: mastodon.mastodon_client
-    enabled: true
-    config:
-      base_url: "https://mstdn.science"
-      access_token: $BRC_MASTODON_ACCESS_TOKEN
-      max_content_length: 500
-      account_url: "https://mstdn.science/@brc_analytics"
-
-  - name: bluesky-brc
-    class: bluesky.bluesky_client
-    enabled: true
-    config:
-      base_url: "https://bsky.social"
-      username: "brcanalytics.bsky.social"
-      password: $BRC_BLUESKY_PASSWORD
-      max_content_length: 300
-      account_url: "https://bsky.app/profile/brcanalytics.bsky.social"
-
-  - name: linkedin-brc
-    class: linkedin.linkedin_client
-    enabled: true
-    config:
-      access_token: $BRC_LINKEDIN_ACCESS_TOKEN
-      org_id: 104467448  # BRC Analytics LinkedIn account
-      max_content_length: 3000
-      account_url: "https://www.linkedin.com/company/brc-analytics"
-
-  - name: mastodon-vgp
-    class: mastodon.mastodon_client
-    enabled: true
-    config:
-      base_url: "https://mastodon.social"
-      access_token: $VGP_MASTODON
-      max_content_length: 500
-      account_url: "https://mastodon.social/@vertebrategenomesproject"
-
-  - name: bluesky-vgp
-    class: bluesky.bluesky_client
-    enabled: true
-    config:
-      base_url: "https://bsky.social"
-      username: "vertebrategenomes.bsky.social"
-      password: $VGP_BLUESKY_PASSWORD
-      max_content_length: 300
-      account_url: "https://bsky.app/profile/vertebrategenomes.bsky.social"
