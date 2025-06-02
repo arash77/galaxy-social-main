@@ -13,7 +13,8 @@ from .base import strip_markdown_formatting
 class linkedin_client:
     def __init__(self, **kwargs):
         self.api_base_url = kwargs.get("base_url", "https://api.linkedin.com/rest")
-        self.organization_urn = f"urn:li:organization:{kwargs.get('org_id')}"
+        # self.organization_urn = f"urn:li:organization:{kwargs.get('org_id')}"
+        self.organization_urn = kwargs.get("org_urn")
         self.access_token = kwargs.get("access_token")
         self.headers = {
             "Authorization": f"Bearer {self.access_token}",
