@@ -72,27 +72,27 @@ class linkedin_client:
                 print(f"[WARN] Failed to resolve @{mention}: {e}")
                 warnings += f"Failed to resolve @{mention}: {e}\n"
             output.append(f"@[{mention}]({urn})" if urn else f"@{mention}")
-        return " ".join(output), warnings
+        return " ".join(output)
 
     def protect_mentions(self, content):
         protected_mentions = {}
 
         def protect(match):
-            key = f"M{len(protected_mentions)}"
+            key = f"«M{len(protected_mentions)}»"
             protected_mentions[key] = match.group(0)
-            return f"${key}"
+            return key
 
         content = re.sub(r"@\[[^\]]+\]\(urn:li:organization:\d+\)", protect, content)
         return content, protected_mentions
 
     def format_content(self, content, mentions, hashtags, images, **kwargs):
-        warnings = ""
-        mentions, mentions_warnings = self.build_organization_mentions(mentions)
-        warnings += mentions_warnings
+        mentions = self.build_organization_mentions(mentions)
         hashtags = " ".join([f"#{v}" for v in hashtags])
         if len(images) > 20:
-            warnings += f"A maximum of 20 images, not {len(images)}, can be included in a single linkedin post."
+            warnings = f"A maximum of 20 images, not {len(images)}, can be included in a single linkedin post."
             images = images[:20]
+        else:
+            warnings = ""
 
         # convert markdown formatting because linkedin doesn't support it
         content, protected_mentions = self.protect_mentions(content)
@@ -124,12 +124,32 @@ class linkedin_client:
         return formatted_content, preview, warnings
 
     def linkedin_post(self, content, images):
+        content, protected_mentions = self.protect_mentions(content)
         try:
             content, protected_mentions = self.protect_mentions(content)
             # This is needed to escape special characters in the content
             # https://learn.microsoft.com/en-us/linkedin/marketing/community-management/shares/little-text-format?view=li-lms-2024-08#text
-            content = content.translate({ord(c): f"\\{c}" for c in "\\|{}@[]()<>#*_~"})
-            content = Template(content).safe_substitute(protected_mentions)
+            for char in [
+                "\\",
+                "|",
+                "{",
+                "}",
+                "@",
+                "[",
+                "]",
+                "(",
+                ")",
+                "<",
+                ">",
+                "#",
+                "*",
+                "_",
+                "~",
+            ]:
+                content = content.replace(char, f"\\{char}")
+
+            for key, value in protected_mentions.items():
+                content = content.replace(key, value)
 
             data = {
                 "author": self.organization_urn,
