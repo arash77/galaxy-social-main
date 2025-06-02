@@ -1,8 +1,7 @@
 ---
 media:
 - linkedin
-mentions:
-  linkedin:
-  - galaxy-project
 ---
 this is only for testing purposes!
+
+@[Galaxy Project](urn:li:organization:101662592)
