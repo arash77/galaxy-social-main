@@ -86,13 +86,14 @@ class linkedin_client:
         return content, protected_mentions
 
     def format_content(self, content, mentions, hashtags, images, **kwargs):
-        mentions = self.build_organization_mentions(mentions)
+        warnings = ""
+        mentions, mention_stat = self.build_organization_mentions(mentions)
+        if mention_stat:
+            warnings += mention_stat + "\n"
         hashtags = " ".join([f"#{v}" for v in hashtags])
         if len(images) > 20:
-            warnings = f"A maximum of 20 images, not {len(images)}, can be included in a single linkedin post."
+            warnings += f"A maximum of 20 images, not {len(images)}, can be included in a single linkedin post."
             images = images[:20]
-        else:
-            warnings = ""
 
         # convert markdown formatting because linkedin doesn't support it
         content, protected_mentions = self.protect_mentions(content)
