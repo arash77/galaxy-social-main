@@ -38,7 +38,8 @@ plugins:
     enabled: true
     config:
       access_token: $LINKEDIN_ACCESS_TOKEN
-      org_id: 79988552
+      # org_id: 79988552
+      org_urn: "urn:li:person:j1MSG_Lo5j"
       max_content_length: 3000
 
   - name: markdown
