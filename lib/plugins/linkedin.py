@@ -71,6 +71,17 @@ class linkedin_client:
             output.append(f"@[{mention}]({urn})" if urn else f"@{mention}")
         return " ".join(output)
 
+    def protect_mentions(self, content):
+        protected_mentions = {}
+
+        def protect(match):
+            key = f"«M{len(protected_mentions)}»"
+            protected_mentions[key] = match.group(0)
+            return key
+
+        content = re.sub(r"@\[[^\]]+\]\(urn:li:organization:\d+\)", protect, content)
+        return content, protected_mentions
+
     def format_content(self, content, mentions, hashtags, images, **kwargs):
         mentions = self.build_organization_mentions(mentions)
         hashtags = " ".join([f"#{v}" for v in hashtags])
@@ -81,14 +92,7 @@ class linkedin_client:
             warnings = ""
 
         # convert markdown formatting because linkedin doesn't support it
-        protected_mentions = {}
-
-        def protect(match):
-            key = f"PROTECTED_MENTION_{len(protected_mentions)}"
-            protected_mentions[key] = match.group(0)
-            return key
-
-        content = re.sub(r"@\[[^\]]+\]\(urn:li:organization:\d+\)", protect, content)
+        content, protected_mentions = self.protect_mentions(content)
 
         paragraphs = content.split("\n\n\n")
         for i, p in enumerate(paragraphs):
@@ -118,6 +122,7 @@ class linkedin_client:
         return formatted_content, preview, warnings
 
     def linkedin_post(self, content, images):
+        content, protected_mentions = self.protect_mentions(content)
         try:
             # This is needed to escape special characters in the content
             # https://learn.microsoft.com/en-us/linkedin/marketing/community-management/shares/little-text-format?view=li-lms-2024-08#text
@@ -139,6 +144,9 @@ class linkedin_client:
                 "~",
             ]:
                 content = content.replace(char, f"\\{char}")
+
+            for key, value in protected_mentions.items():
+                content = content.replace(key, value)
 
             data = {
                 "author": self.organization_urn,
