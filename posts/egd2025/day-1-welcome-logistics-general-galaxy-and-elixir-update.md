@@ -1,15 +1,15 @@
 ---
 media:
-- bluesky-galaxyproject
-- linkedin-galaxyproject
-- mastodon-galaxyproject
-- matrix-eu-announce
+- bluesky
+- linkedin
+- mastodon
+- matrix
 mentions:
-  mastodon-galaxyproject:
+  mastodon:
   - bgruening@fosstodon.org
   - hrhotz@genomic.social
   - galaxyfreiburg@xn--baw-joa.social
-  bluesky-galaxyproject:
+  bluesky:
   - hhrhotz.bsky.social
 ---
 
