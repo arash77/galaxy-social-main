@@ -36,6 +36,11 @@ plugins:
       org_id: 0
       max_content_length: 3000
 
+  - name: crash-test  # always crashes while posting, to test failure handling
+    class: crash.crash_client
+    enabled: true
+    config: {}
+
   - name: markdown
     class: markdown.markdown_client
     enabled: true
