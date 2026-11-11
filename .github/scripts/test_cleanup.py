@@ -5,11 +5,11 @@ Without --delete it only lists what it would remove (and who is logged in).
 Mastodon and Bluesky may be personal accounts: only posts containing MARKER, and replies in
 their threads, are removed. Matrix posts in a test room by a bot account: all its messages are removed.
 """
-import asyncio
 import os
 import sys
 from datetime import datetime, timedelta, timezone
 from urllib.parse import quote
+from uuid import uuid4
 
 import requests
 import yaml
@@ -83,38 +83,34 @@ def bluesky_cleanup(config):
             print(f"  keep (no marker) {created} {post.uri}")
 
 
-async def matrix_cleanup_async(config):
-    from nio import AsyncClient
-
-    client = AsyncClient(config["base_url"])
-    client.access_token = config["access_token"]
-    try:
-        user_id = (await client.whoami()).user_id
-        client.user_id = user_id
-        room_id = config["room_id"]
-        print(f"  logged in as {user_id}, room {room_id}")
-        sync = await client.sync(timeout=0, sync_filter={"room": {"rooms": [room_id], "timeline": {"limit": 50}}})
-        timeline = sync.rooms.join[room_id].timeline
-        events, token = list(reversed(timeline.events)), timeline.prev_batch
-        while True:
-            for event in events:
-                if not hasattr(event, "server_timestamp"):
-                    continue  # events nio could not parse
-                if event.server_timestamp / 1000 < since.timestamp():
-                    return
-                content = event.source.get("content", {})
-                if event.sender == user_id and event.source.get("type") == "m.room.message" and content:
-                    print(f"  {datetime.fromtimestamp(event.server_timestamp / 1000, timezone.utc)} {event.event_id} {content.get('msgtype')} {content.get('info', {}).get('mimetype', '')}: {content.get('body', '')[:50]!r}")
-                    if delete:
-                        await client.room_redact(room_id, event.event_id, "test cleanup")
-            if not token:
+def matrix_cleanup(config):
+    # plain client-server API: /messages without "from" reads back from the newest event (Matrix 1.3+)
+    api = config["base_url"].rstrip("/") + "/_matrix/client/v3"
+    headers = {"Authorization": f"Bearer {config['access_token']}"}
+    response = requests.get(f"{api}/account/whoami", headers=headers)
+    response.raise_for_status()
+    user_id, room = response.json()["user_id"], quote(config["room_id"], safe="")
+    print(f"  logged in as {user_id}, room {config['room_id']}")
+    params = {"dir": "b", "limit": 100}
+    while True:
+        response = requests.get(f"{api}/rooms/{room}/messages", headers=headers, params=params)
+        response.raise_for_status()
+        data = response.json()
+        for event in data.get("chunk", []):
+            if event["origin_server_ts"] / 1000 < since.timestamp():
                 return
-            response = await client.room_messages(room_id, start=token, limit=100)
-            if not response.chunk:
-                return
-            events, token = response.chunk, response.end
-    finally:
-        await client.close()
+            content = event.get("content", {})
+            if event["sender"] == user_id and event["type"] == "m.room.message" and content:
+                print(f"  {datetime.fromtimestamp(event['origin_server_ts'] / 1000, timezone.utc)} {event['event_id']} {content.get('msgtype')} {content.get('info', {}).get('mimetype', '')}: {content.get('body', '')[:50]!r}")
+                if delete:
+                    requests.put(
+                        f"{api}/rooms/{room}/redact/{quote(event['event_id'], safe='')}/{uuid4()}",
+                        headers=headers,
+                        json={"reason": "test cleanup"},
+                    ).raise_for_status()
+        if "end" not in data:
+            return
+        params["from"] = data["end"]
 
 
 def linkedin_cleanup(config):
@@ -145,7 +141,7 @@ def linkedin_cleanup(config):
 cleanups = {
     "mastodon": mastodon_cleanup,
     "bluesky": bluesky_cleanup,
-    "matrix": lambda config: asyncio.run(matrix_cleanup_async(config)),
+    "matrix": matrix_cleanup,
     "linkedin": linkedin_cleanup,
 }
 failed = False
