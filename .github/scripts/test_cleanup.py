@@ -104,7 +104,7 @@ async def matrix_cleanup_async(config):
                     return
                 content = event.source.get("content", {})
                 if event.sender == user_id and event.source.get("type") == "m.room.message" and content:
-                    print(f"  {datetime.fromtimestamp(event.server_timestamp / 1000, timezone.utc)} {event.event_id} {content.get('msgtype')}: {content.get('body', '')[:50]!r}")
+                    print(f"  {datetime.fromtimestamp(event.server_timestamp / 1000, timezone.utc)} {event.event_id} {content.get('msgtype')} {content.get('info', {}).get('mimetype', '')}: {content.get('body', '')[:50]!r}")
                     if delete:
                         await client.room_redact(room_id, event.event_id, "test cleanup")
             if not token:
