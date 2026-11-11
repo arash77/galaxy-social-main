@@ -1,0 +1,46 @@
+name: Clean up test posts
+
+# TEST ENVIRONMENT ONLY: lists (or deletes) what the test accounts in plugins.yml posted.
+on:
+  workflow_dispatch:
+    inputs:
+      hours:
+        description: "Look at posts from the last N hours"
+        default: "24"
+        required: true
+      delete:
+        description: "Really delete (otherwise only list)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install uv
+          uv pip install --system -r requirements.txt
+
+      - name: Clean up
+        env:
+          MASTODON_ACCESS_TOKEN: ${{ secrets.MASTODON_ACCESS_TOKEN }}
+          BLUESKY_PASSWORD: ${{ secrets.BLUESKY_PASSWORD }}
+          MATRIX_ACCESS_TOKEN: ${{ secrets.MATRIX_ACCESS_TOKEN }}
+          LINKEDIN_ACCESS_TOKEN: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
+          HOURS: ${{ inputs.hours }}
+          DELETE: ${{ inputs.delete && '--delete' || '' }}
+        run: python -u .github/scripts/test_cleanup.py "$HOURS" $DELETE

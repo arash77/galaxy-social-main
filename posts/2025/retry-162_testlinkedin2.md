@@ -1,8 +1,0 @@
----
-media:
-- linkedin
-mentions:
-  linkedin:
-  - galaxy-project
----
-this is only for testing purposes!

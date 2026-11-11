@@ -13,13 +13,12 @@ from .base import strip_markdown_formatting
 class linkedin_client:
     def __init__(self, **kwargs):
         self.api_base_url = kwargs.get("base_url", "https://api.linkedin.com/rest")
-        # self.organization_urn = f"urn:li:organization:{kwargs.get('org_id')}"
-        self.organization_urn = kwargs.get("org_urn")
+        self.organization_urn = f"urn:li:organization:{kwargs.get('org_id')}"
         self.access_token = kwargs.get("access_token")
         self.headers = {
             "Authorization": f"Bearer {self.access_token}",
             "X-Restli-Protocol-Version": "2.0.0",
-            "LinkedIn-Version": "202506",
+            "LinkedIn-Version": "202607",
         }
         self.max_content_length = kwargs.get("max_content_length", 3000)
 
@@ -27,7 +26,11 @@ class linkedin_client:
         paragraphs = content.split("\n\n\n")
         for p in paragraphs:
             for chunk in textwrap.wrap(
-                p.strip("\n"), max_chunk_length, replace_whitespace=False
+                p.strip("\n"),
+                max_chunk_length,
+                replace_whitespace=False,
+                # keep hyphenated handles and words in one chunk
+                break_on_hyphens=False,
             ):
                 yield chunk
 
@@ -53,7 +56,7 @@ class linkedin_client:
 
     def build_organization_mentions(self, mentions):
         output = []
-        warning = ""
+        warnings = ""
         for mention in mentions:
             vanity_name = mention.strip()
             urn = None
@@ -70,26 +73,25 @@ class linkedin_client:
                     mention = elements[0].get("localizedName")
             except Exception as e:
                 print(f"[WARN] Failed to resolve @{mention}: {e}")
-                warning += f"Failed to resolve @{mention} to a valid organization. "
+                warnings += f"Failed to resolve @{mention}: {e}\n"
             output.append(f"@[{mention}]({urn})" if urn else f"@{mention}")
-        return " ".join(output), warning
+        return " ".join(output), warnings
 
     def protect_mentions(self, content):
         protected_mentions = {}
 
         def protect(match):
-            key = f"«M{len(protected_mentions)}»"
+            key = f"M{len(protected_mentions)}"
             protected_mentions[key] = match.group(0)
-            return key
+            return f"${key}"
 
         content = re.sub(r"@\[[^\]]+\]\(urn:li:organization:\d+\)", protect, content)
         return content, protected_mentions
 
     def format_content(self, content, mentions, hashtags, images, **kwargs):
         warnings = ""
-        mentions, mention_stat = self.build_organization_mentions(mentions)
-        if mention_stat:
-            warnings += mention_stat + "\n"
+        mentions, mentions_warnings = self.build_organization_mentions(mentions)
+        warnings += mentions_warnings
         hashtags = " ".join([f"#{v}" for v in hashtags])
         if len(images) > 20:
             warnings += f"A maximum of 20 images, not {len(images)}, can be included in a single linkedin post."
@@ -125,32 +127,12 @@ class linkedin_client:
         return formatted_content, preview, warnings
 
     def linkedin_post(self, content, images):
-        content, protected_mentions = self.protect_mentions(content)
         try:
             content, protected_mentions = self.protect_mentions(content)
             # This is needed to escape special characters in the content
             # https://learn.microsoft.com/en-us/linkedin/marketing/community-management/shares/little-text-format?view=li-lms-2024-08#text
-            for char in [
-                "\\",
-                "|",
-                "{",
-                "}",
-                "@",
-                "[",
-                "]",
-                "(",
-                ")",
-                "<",
-                ">",
-                "#",
-                "*",
-                "_",
-                "~",
-            ]:
-                content = content.replace(char, f"\\{char}")
-
-            for key, value in protected_mentions.items():
-                content = content.replace(key, value)
+            content = content.translate({ord(c): f"\\{c}" for c in "\\|{}@[]()<>#*_~"})
+            content = Template(content).safe_substitute(protected_mentions)
 
             data = {
                 "author": self.organization_urn,
