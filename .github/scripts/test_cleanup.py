@@ -1,7 +1,9 @@
-"""TEST ENVIRONMENT ONLY: delete what the test accounts in plugins.yml posted since a given time.
+"""TEST ENVIRONMENT ONLY: delete test posts of the accounts in plugins.yml since a given time.
 
 Usage: python .github/scripts/test_cleanup.py HOURS [--delete]
 Without --delete it only lists what it would remove (and who is logged in).
+Mastodon and Bluesky may be personal accounts: only posts containing MARKER, and replies in
+their threads, are removed. Matrix posts in a test room by a bot account: all its messages are removed.
 """
 import asyncio
 import os
@@ -12,6 +14,7 @@ from urllib.parse import quote
 import requests
 import yaml
 
+MARKER = "🧪 galaxy-social test"
 hours, delete = float(sys.argv[1]), "--delete" in sys.argv
 since = datetime.now(timezone.utc) - timedelta(hours=hours)
 print(f"{'Deleting' if delete else 'Listing (dry run)'} posts since {since.isoformat()}\n")
@@ -30,15 +33,21 @@ def mastodon_cleanup(config):
     client = Mastodon(access_token=config["access_token"], api_base_url=config["base_url"])
     me = client.account_verify_credentials()
     print(f"  logged in as @{me['acct']} on {config['base_url']} (locked: {me['locked']})")
-    page = client.account_statuses(me["id"], limit=40)
+    statuses, page = [], client.account_statuses(me["id"], limit=40)
     while page:
-        for status in page:
-            if status["created_at"] < since:
-                return
+        statuses += [status for status in page if status["created_at"] >= since]
+        if page[-1]["created_at"] < since:
+            break
+        page = client.fetch_next(page)
+    test_ids = set()
+    for status in reversed(statuses):  # oldest first, so a thread's root comes before its replies
+        if MARKER in status["content"] or status["in_reply_to_id"] in test_ids:
+            test_ids.add(status["id"])
             print(f"  {status['created_at']} {status['url']}")
             if delete:
                 client.status_delete(status["id"])
-        page = client.fetch_next(page)
+        else:
+            print(f"  keep (no marker) {status['created_at']} {status['url']}")
 
 
 def bluesky_cleanup(config):
@@ -47,21 +56,31 @@ def bluesky_cleanup(config):
     client = Client(config["base_url"])
     me = client.login(config["username"], config["password"])
     print(f"  logged in as @{me.handle}")
-    cursor = None
+    posts, cursor = [], None
     while True:
         feed = client.get_author_feed(actor=me.did, cursor=cursor, limit=100)
+        old = False
         for item in feed.feed:
             if item.reason or item.post.author.did != me.did:
                 continue  # reposts and others' posts
             created = datetime.fromisoformat(item.post.record.created_at.replace("Z", "+00:00"))
             if created < since:
-                return
-            print(f"  {created} {item.post.uri}")
-            if delete:
-                client.delete_post(item.post.uri)
+                old = True
+                break
+            posts.append((created, item.post))
         cursor = feed.cursor
-        if not cursor:
-            return
+        if old or not cursor:
+            break
+    test_uris = set()
+    for created, post in sorted(posts, key=lambda p: p[0]):  # oldest first
+        reply = post.record.reply
+        if MARKER in post.record.text or (reply and reply.root.uri in test_uris):
+            test_uris.add(post.uri)
+            print(f"  {created} {post.uri}")
+            if delete:
+                client.delete_post(post.uri)
+        else:
+            print(f"  keep (no marker) {created} {post.uri}")
 
 
 async def matrix_cleanup_async(config):

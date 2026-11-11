@@ -1,6 +1,7 @@
-# TEST ENVIRONMENT (arash77/galaxy-social-main): every account here is a test account.
-# Names match upstream so real posts can be replayed unchanged.
-# Remove test posts with the "Clean up test posts" workflow.
+# TEST ENVIRONMENT (arash77/galaxy-social-main). Names match upstream so real posts can be replayed.
+# Mastodon and Bluesky are personal accounts: start every test post with "🧪 galaxy-social test",
+# the "Clean up test posts" workflow only removes posts with that marker (and their thread replies).
+# Matrix is a bot in a test room: the cleanup removes all its messages in the time window.
 plugins:
   - name: mastodon-galaxyproject
     class: mastodon.mastodon_client
@@ -12,10 +13,10 @@ plugins:
 
   - name: bluesky-galaxyproject
     class: bluesky.bluesky_client
-    enabled: false  # set username and the BLUESKY_PASSWORD secret of the test account, then enable
+    enabled: true
     config:
       base_url: "https://bsky.social"
-      username: "TEST-ACCOUNT.bsky.social"
+      username: "kadkhodaei.de"
       password: $BLUESKY_PASSWORD
       max_content_length: 300
 
@@ -29,7 +30,7 @@ plugins:
 
   - name: linkedin-galaxyproject
     class: linkedin.linkedin_client
-    enabled: false  # set org_id of the test company page and the LINKEDIN_ACCESS_TOKEN secret, then enable
+    enabled: false  # needs a test company page: set org_id and the LINKEDIN_ACCESS_TOKEN secret
     config:
       access_token: $LINKEDIN_ACCESS_TOKEN
       org_id: 0
